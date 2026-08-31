@@ -1,0 +1,496 @@
+<title>Carry the One</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f6f3ec;
+    --surface: #fffdf8;
+    --surface-2: #efeade;
+    --ink: #22262e;
+    --ink-soft: #565c69;
+    --ink-faint: #8a8d92;
+    --accent: #1e6e76;
+    --accent-ink: #ffffff;
+    --fail: #a8431f;
+    --ok: #2f7a4f;
+    --line: rgba(34,38,46,0.14);
+    --line-soft: rgba(34,38,46,0.07);
+    --shadow: 0 1px 2px rgba(34,38,46,0.06), 0 8px 24px rgba(34,38,46,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1d22;
+      --surface: #24272e;
+      --surface-2: #2c2f37;
+      --ink: #ece8de;
+      --ink-soft: #adaaa2;
+      --ink-faint: #7d7f85;
+      --accent: #6bc9d1;
+      --accent-ink: #12292c;
+      --fail: #e08a63;
+      --ok: #7fc79b;
+      --line: rgba(236,232,222,0.14);
+      --line-soft: rgba(236,232,222,0.07);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1d22;
+    --surface: #24272e;
+    --surface-2: #2c2f37;
+    --ink: #ece8de;
+    --ink-soft: #adaaa2;
+    --ink-faint: #7d7f85;
+    --accent: #6bc9d1;
+    --accent-ink: #12292c;
+    --fail: #e08a63;
+    --ok: #7fc79b;
+    --line: rgba(236,232,222,0.14);
+    --line-soft: rgba(236,232,222,0.07);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    font-size: 19px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 4.5rem 1.5rem 7rem;
+  }
+  .wide {
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ---------- masthead ---------- */
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 1.1rem;
+  }
+  h1.title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.4rem;
+    text-wrap: balance;
+  }
+  .dek {
+    font-size: 1.28rem;
+    color: var(--ink-soft);
+    max-width: 34em;
+    margin: 0 0 2.2rem;
+    text-wrap: balance;
+  }
+  .byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-faint);
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- headline stat pair ---------- */
+  .stat-duel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 2.6rem 0;
+  }
+  .stat-cell {
+    background: var(--surface);
+    padding: 1.9rem 1.6rem;
+  }
+  .stat-cell .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.7rem;
+  }
+  .stat-cell .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 3rem;
+    line-height: 1;
+  }
+  .stat-cell.fail .num { color: var(--fail); }
+  .stat-cell.ok .num { color: var(--ok); }
+  .stat-cell .sub {
+    font-family: 'Newsreader', serif;
+    font-size: 15.5px;
+    color: var(--ink-soft);
+    margin-top: 0.6rem;
+  }
+
+  /* ---------- prose ---------- */
+  h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.85rem;
+    letter-spacing: -0.005em;
+    margin: 3.4rem 0 1.1rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.28rem;
+    margin: 2.2rem 0 0.8rem;
+  }
+  p { margin: 0 0 1.3rem; }
+  strong { font-weight: 600; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.86em;
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+
+  .lede::first-letter {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 3.4em;
+    float: left;
+    line-height: 0.85;
+    padding: 0.04em 0.09em 0 0;
+    color: var(--accent);
+  }
+
+  /* ---------- section rule ---------- */
+  .ledger {
+    height: 1px;
+    margin: 3.6rem 0;
+    background-image: repeating-linear-gradient(90deg, var(--line) 0, var(--line) 6px, transparent 6px, transparent 14px);
+  }
+
+  /* ---------- lesson blocks ---------- */
+  .lesson {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr;
+    gap: 0.9rem;
+    margin: 2.6rem 0;
+  }
+  .lesson .n {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+    padding-top: 0.15em;
+  }
+  .lesson h3 { margin: 0 0 0.6rem; }
+  .lesson .body p:last-child { margin-bottom: 0; }
+
+  /* ---------- aside / margin note ---------- */
+  .note {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    margin: 1.6rem 0;
+    box-shadow: var(--shadow);
+  }
+  .note .note-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .note p { font-size: 0.94em; margin-bottom: 0.6rem; }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* ---------- data table ---------- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 1.8rem 0;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  table { border-collapse: collapse; width: 100%; min-width: 480px; }
+  caption {
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0.9rem 1.1rem 0;
+  }
+  th, td {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    padding: 0.65rem 1.1rem;
+    text-align: right;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; }
+  thead th {
+    color: var(--ink-faint);
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.hi { color: var(--ok); font-weight: 600; }
+  td.lo { color: var(--fail); font-weight: 600; }
+  tr.split td { border-top: 2px dashed var(--line); }
+
+  /* ---------- pipeline diagram ---------- */
+  .diagram {
+    margin: 1.8rem 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+  }
+  .diagram svg { width: 100%; height: auto; display: block; }
+
+  /* ---------- verdict box ---------- */
+  .verdict {
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 1.8rem 2rem;
+    margin: 2.2rem 0;
+  }
+  .verdict .note-label { color: var(--ink-soft); }
+  .verdict h3 { margin-top: 0; }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 640px) {
+    body { font-size: 17px; }
+    .stat-duel { grid-template-columns: 1fr; }
+    .lesson { grid-template-columns: 1fr; }
+    .lesson .n { padding-top: 0; }
+  }
+</style>
+
+<div class="page">
+
+  <div class="kicker">research notebook · symbolic arithmetic in transformers</div>
+  <h1 class="title">Carry the One</h1>
+  <p class="dek">A transformer trained on ordinary character tokenization gets exactly <strong>zero percent</strong> of every addition problem right once the numbers run one digit longer than training. The same task, given a representation built for the job, gets them right well past double the training length. The bottleneck was never the attention mechanism.</p>
+  <div class="byline">
+    <span>research log</span>
+    <span>18 architecture variants, 1 closed answer</span>
+    <span>addition, base 10</span>
+  </div>
+
+  <div class="stat-duel">
+    <div class="stat-cell fail">
+      <div class="label">Standard transformer · char tokens</div>
+      <div class="num">0%</div>
+      <div class="sub">on every addition problem one digit longer than it was trained on — digits 11 through 21, no exceptions, verified twice.</div>
+    </div>
+    <div class="stat-cell ok">
+      <div class="label">Same task · engineered representation</div>
+      <div class="num">99%+</div>
+      <div class="sub">on sums up to double the trained length, using a model with <em>six times fewer</em> parameters.</div>
+    </div>
+  </div>
+
+  <p class="lede">Addition is the toy problem everyone reaches for when they want to ask whether transformers can learn an algorithm rather than memorize a lookup table, and the standard answer — trained on strings like <code>128+94=222</code>, one character at a time — is discouraging. Models learn the training range well and then fail completely the moment a problem runs longer, as if the arithmetic they learned was never really arithmetic, just a pattern that happened to fit a few thousand examples. That result held up in this project too, on the very first model we trained. What follows is the record of what changed it, and what didn't.</p>
+
+  <div class="ledger"></div>
+
+  <h2>The baseline, honestly measured</h2>
+  <p>The first model in this project was about as plain as a transformer gets: a 6-layer, 10.7M-parameter GPT, trained on addition problems written out as plain digit strings — <code>0123456789+=\n</code> as the entire vocabulary, one token per character, next-token prediction, greedy decoding at eval time. Trained on sums with up to 10 digits per operand, evaluated in-distribution and on sums with 11 or more digits it had never seen.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 1 baseline — 6-layer GPT, char tokenization, 10.7M params</caption>
+      <thead><tr><th>digits</th><th>in training range?</th><th>accuracy</th></tr></thead>
+      <tbody>
+        <tr><td>1&ndash;10</td><td>yes</td><td class="hi">74.8%</td></tr>
+        <tr class="split"><td>11&ndash;21</td><td>no</td><td class="lo">0.0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Not an approximate zero — every digit-count bucket, every carry-count bucket, exactly zero, re-verified against a broader test set spanning up to 21 digits long after the fact. Extending the operand by a single digit was enough to erase the model's ability to add entirely, despite 74.8% of in-distribution problems being solved correctly. This is the well-documented failure mode: it isn't that the model can't approximate addition, it's that whatever it learned doesn't extend past the specific lengths it was shown.</p>
+
+  <div class="note">
+    <div class="note-label">What actually changed</div>
+    <p>Nothing about attention depth, parameter count, or training duration. The architecture that eventually fixed this uses <strong>six times fewer parameters</strong> than the baseline above. What changed was how a number gets turned into vectors in the first place, and how the model is allowed to read them back out.</p>
+  </div>
+
+  <div class="ledger"></div>
+
+  <h2>Four things that actually mattered</h2>
+  <p>Getting from that 0% wall to reliable extrapolation took a long sequence of architecture variants — disjoint per-place slot encodings, magnitude-aware codewords, repeating combiner blocks, more than a dozen ablations of each. Most of that log isn't worth reproducing. Four findings are.</p>
+
+  <div class="lesson">
+    <div class="n">1</div>
+    <div class="body">
+      <h3>Parallel decoding needs a representation with no missing positions</h3>
+      <p>The fix starts by abandoning autoregressive generation for the answer entirely: every digit of the sum is predicted in parallel, independent of the others, from a single fixed-width vector built explicitly out of one slot per decimal place. That surfaces a subtler problem immediately — short numbers leave most of those slots empty, and "empty" has to mean something to a classifier. Whatever it means gets learned as a property of <em>absolute position</em>, not of the number, and every position sees wildly different amounts of that training exposure. The fix wasn't a smarter empty-slot classifier. It was removing the concept of empty entirely: every number, short or long, is written out with ordinary leading zeros to the same fixed width — <code>42</code> and <code>000&hairsp;&hellip;&hairsp;00042</code> encode identically. A model that never has to decide "is this slot occupied" can't get that decision systematically wrong at the positions it rarely sees.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="n">2</div>
+    <div class="body">
+      <h3>A classifier's embedding table throws away most of its own gradient</h3>
+      <p>Each digit 0&ndash;9 needs its own learned codeword, and the obvious choice — an ordinary embedding table, unit-normalized before use — turns out to waste the overwhelming majority of the gradient it receives. Splitting the direction of a codeword from its magnitude and giving each its own dedicated parameter, gated by a decode rule that scores candidates by (a version of) squared distance rather than raw dot product, recovers that gradient and closes a free-lunch loophole a plain classifier has: scaling every class vector up uniformly used to look like more confidence for free. Under the corrected rule it isn't. Magnitude ends up doing real representational work instead of quietly saturating.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="n">3</div>
+    <div class="body">
+      <h3>A fixed-depth recurrent combiner is brittle to depth mismatch, and fixing that costs something real</h3>
+      <p>Carry propagation is a sequential dependency — adding one to a run of nines has to ripple all the way down the number — so the block that combines two encoded operands runs repeatedly, the same shared weights applied a fixed number of rounds, deeper for longer numbers. Trained at exactly one round count, that block doesn't just fail to help when run for more rounds than it saw in training: it actively <strong>corrupts already-correct answers</strong>. Nothing in training ever taught it that leaving a converged answer alone is an option. Training with a variable round count instead fixes that failure mode cleanly, and buys it back at a real cost in length extrapolation — a genuine trade, not a free improvement, and worth knowing about before shipping either version.</p>
+    </div>
+  </div>
+
+  <div class="lesson">
+    <div class="n">4</div>
+    <div class="body">
+      <h3>Hand-designed "mathematically clean" encodings underperformed arbitrary ones</h3>
+      <p>This is the counterintuitive one, and it came out of a deliberate attempt to do better. If digit <em>d</em> is placed at angle 36°&times;<em>d</em> on a circle, digit-sum becomes literal angle addition — a clean, textbook-motivated encoding for the operation you actually want. It measurably underperformed a codebook with no imposed structure at all, learned from a random start, at every dimensionality tested. So did a second, even more literal attempt: encoding digit value directly as vector magnitude, so that addition becomes literal vector addition. Both hit the same wall as the encoding got smaller and more "elegant" — accuracy that held up at moderate width and degraded, sometimes catastrophically, as the representation was forced toward the minimal form the mathematics seemed to call for. An arbitrary, freely-learned codebook at a moderate width (3 dimensions per digit, out of 384 available) beat every deliberately-structured alternative tried, including the ones built specifically to make the combiner's job easier on paper.</p>
+    </div>
+  </div>
+
+  <div class="ledger"></div>
+
+  <h2>The headline comparison</h2>
+  <p>The architecture that resulted from those four findings — call it the closed answer, since nothing tried afterward beat it — uses a disjoint per-place slot encoding, the direction/magnitude-split codewords from finding 2, zero-padded representations from finding 1, and a repeating combiner block held at a fixed round count. 1.79M parameters, trained on sums up to 20 digits long.</p>
+
+  <div class="table-wrap wide">
+    <table>
+      <caption>in-distribution and extrapolation accuracy, by operand length</caption>
+      <thead><tr><th>digits</th><th>1&ndash;10</th><th>11&ndash;13</th><th>14&ndash;18</th><th>19&ndash;21</th><th>24</th><th>25</th><th>26</th></tr></thead>
+      <tbody>
+        <tr><td>trained on?</td><td>yes</td><td colspan="3">no (interpolation)</td><td colspan="3">no (2&ndash;5&times; training length)</td></tr>
+        <tr><td>accuracy</td><td class="hi">100%</td><td class="hi">100%</td><td class="hi">100%</td><td class="hi">100%</td><td class="hi">99%</td><td>80.5%</td><td class="lo">52.5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Perfect through the entire trained range and the first stretch beyond it, graceful — not catastrophic — decay from there. Compare that against the baseline's cliff: 74.8% in range, exactly 0% one digit past it. Same underlying task, a model with roughly a sixth of the parameters, no additional training tricks beyond the representation itself.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline: two digit sequences are encoded into fixed-width vectors, combined by a repeating block, then decoded in parallel back to digit classes.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/>
+        </marker>
+      </defs>
+      <style>
+        .box { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+        .lbl { font-family: 'JetBrains Mono', monospace; font-size: 12px; fill: var(--ink); }
+        .sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: var(--ink-faint); }
+        .flow { stroke: var(--ink-faint); stroke-width: 1.4; fill: none; marker-end: url(#arrow); }
+      </style>
+      <rect x="10" y="60" width="150" height="80" rx="8" class="box"/>
+      <text x="85" y="94" text-anchor="middle" class="lbl">a, b</text>
+      <text x="85" y="112" text-anchor="middle" class="sub">digit sequences</text>
+
+      <path class="flow" d="M160,100 H210"/>
+      <rect x="215" y="40" width="180" height="120" rx="8" class="box"/>
+      <text x="305" y="94" text-anchor="middle" class="lbl">encode</text>
+      <text x="305" y="112" text-anchor="middle" class="sub">one slot per place,</text>
+      <text x="305" y="126" text-anchor="middle" class="sub">zero-padded, fixed width</text>
+
+      <path class="flow" d="M395,100 H445"/>
+      <rect x="450" y="20" width="220" height="160" rx="8" class="box"/>
+      <text x="560" y="80" text-anchor="middle" class="lbl">combine</text>
+      <text x="560" y="98" text-anchor="middle" class="sub">shared block,</text>
+      <text x="560" y="112" text-anchor="middle" class="sub">repeated up to 24&times;</text>
+      <text x="560" y="132" text-anchor="middle" class="sub">(carry propagation</text>
+      <text x="560" y="146" text-anchor="middle" class="sub">needs the depth)</text>
+
+      <path class="flow" d="M670,100 H720"/>
+      <rect x="725" y="40" width="130" height="120" rx="8" class="box"/>
+      <text x="790" y="94" text-anchor="middle" class="lbl">decode</text>
+      <text x="790" y="112" text-anchor="middle" class="sub">all places,</text>
+      <text x="790" y="126" text-anchor="middle" class="sub">in parallel</text>
+    </svg>
+  </div>
+
+  <div class="ledger"></div>
+
+  <h2>A wilder variant, kept separate on purpose</h2>
+  <p>One more experiment is worth including, clearly labeled as answering a different question than the one above. Positional decimal representation isn't the only way to encode a number, and it's the reason addition needs carry propagation at all: represent a value instead by its residues modulo a set of coprime numbers — a Residue Number System — and addition becomes fully independent per residue channel, no carry, no dependency between channels whatsoever.</p>
+  <p>Trained on sums up to only 10 digits — the same range the original baseline failed past — this representation generalized to sums <strong>more than double that length</strong> with no measurable accuracy loss at all, not the graceful decay the positional version shows:</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>residue-number-system variant — trained on 1&ndash;10 digits only</caption>
+      <thead><tr><th>digits</th><th>1&ndash;10</th><th>11&ndash;13</th><th>14&ndash;18</th><th>19&ndash;21</th><th>22+</th></tr></thead>
+      <tbody>
+        <tr><td>trained on?</td><td>yes</td><td colspan="3">no</td><td>no</td></tr>
+        <tr><td>accuracy</td><td class="hi">99.6%</td><td class="hi">99.5%</td><td class="hi">99.7%</td><td class="hi">99.3%</td><td class="lo">0% — hard capacity wall</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>That flat line followed by a hard wall, instead of a decay curve, is the signature of eliminating the dependency structurally rather than learning to manage it: within the representation's capacity there's no sequential chain to get right or wrong, so nothing degrades — and past capacity, reconstruction is mathematically impossible, not merely hard. It's a genuinely different, striking result. It's also not an answer to the question this piece opened with. It works <em>because</em> it designs the carry dependency out of the number system, not because it demonstrates anything about a combiner's ability to learn carry propagation itself. Interesting enough to record, wrong shape to serve as the headline result.</p>
+
+  <div class="ledger"></div>
+
+  <h2>What this doesn't show</h2>
+  <div class="note">
+    <div class="note-label">Scope, stated plainly</div>
+    <p>This isn't "the same transformer with a better tokenizer." The comparison architecture predicts every output digit in parallel rather than generating token by token, encodes each operand through a dedicated non-autoregressive module, and runs its combining step for a variable, learned number of rounds rather than a fixed forward pass. Those are real architectural choices doing real work, not merely a different embedding lookup table sitting in front of an otherwise-standard GPT.</p>
+    <p>What's demonstrated cleanly is narrower and still, I think, worth the length of this post: <strong>the standard failure mode is not inevitable</strong>, and it does not require more scale, more depth, or more training to fix — a model a sixth the size of the failing baseline, given a representation built for the structure of the problem, solves it. Whether that same fix is available to a purely embedding-level intervention on an otherwise-unmodified autoregressive transformer is a genuinely open, separate question this project didn't test.</p>
+  </div>
+
+  <div class="verdict">
+    <div class="note-label">Where this leaves things</div>
+    <h3>It was never the attention.</h3>
+    <p>Every failure diagnosed along the way traced back to how numbers were being written into and read out of the model's residual stream, not to any limit on what the attention and feed-forward layers underneath could compute once that representation was fixed. Get the representation right — no missing-slot ambiguity, no wasted gradient in the embedding table, enough repeated depth for the dependency structure the operation actually has, and no premature "cleverness" collapsing the representation smaller than it can afford to be — and a perfectly ordinary transformer block carries the one just fine.</p>
+  </div>
+
+  <footer>
+    stage 1 baseline reproduced and re-verified against current test data before publication · full ablation log available on request
+  </footer>
+
+</div>
