@@ -476,6 +476,35 @@
 
   <div class="ledger"></div>
 
+  <h2>Can a whole number be one token?</h2>
+  <p>The architecture above still hands its combiner one token <em>per decimal place</em> — thirty of them, one for every digit position in the answer. That is scaffolding, and it raises an obvious question: is it load-bearing? The cleaner idea is to compress each operand into a single vector, a single token, and ask the combiner to do the arithmetic on just two of them. Everything else held fixed, per-place tokens were switched off and the combiner given only <code>vec_a</code> and <code>vec_b</code> plus a few learned scratch tokens.</p>
+
+  <div class="table-wrap wide">
+    <table>
+      <caption>two input tokens, no per-place tokens — trained on up to 20 digits, sum accuracy by operand length</caption>
+      <thead><tr><th>variant</th><th>scratch tokens</th><th>1&ndash;10</th><th>19</th><th>20</th><th>21</th><th>24&ndash;26</th></tr></thead>
+      <tbody>
+        <tr><td>v35</td><td>4</td><td class="lo">0.5%</td><td class="lo">0%</td><td class="lo">0%</td><td class="lo">0%</td><td class="lo">0%</td></tr>
+        <tr><td>v36</td><td>32</td><td>83.2%</td><td>66.5%</td><td>55.5%</td><td class="lo">0%</td><td class="lo">0%</td></tr>
+        <tr><td>v37 &middot; explicit positions</td><td>64</td><td class="hi">100%</td><td class="hi">99.5%</td><td class="hi">96.0%</td><td class="lo">0%</td><td class="lo">0%</td></tr>
+        <tr><td>v38 &middot; + local attention window</td><td>64</td><td class="hi">99.9%</td><td class="hi">99.5%</td><td class="hi">99.5%</td><td class="lo">0%</td><td class="lo">0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>The number can be one token. The combiner just needs room to work.</strong> With four scratch tokens the model never leaves chance, and giving it twenty times more rounds at inference changes nothing — it isn't short on compute, it has nowhere to hold intermediate state. At 32 scratch tokens it finds a working algorithm on its own (83% in range). At 64, with each scratch token given an explicit sequential position so it can play the role a decimal place used to play, it matches the per-place model across the whole trained range. The thirty per-place input tokens were doing the job of workspace, not carrying information the two vectors lacked.</p>
+
+  <p><strong>What it did not buy is extrapolation.</strong> Every one of these variants falls off a wall at exactly 21 digits — the first length past training — with exactly zero accuracy, rather than the graceful decay the per-place model shows. Looking at how it fails: 89.6% of the wrong digits at places the model never saw populated are a literal <code>0</code>, the padding value. During training those scratch tokens only ever saw padding at those positions, so &ldquo;always answer zero&rdquo; was a perfect strategy, and nothing taught them otherwise. The per-place model's wiring is position-independent; this one's is addressed by position, and positions it was never trained on are simply unwired.</p>
+
+  <p>The mechanism underneath is also different. The per-place model learned a crisp carry relay, each place passing a carry to its neighbour one offset away. The scratch-token model never converges on anything that clean: attention is spread diffusely across offsets, and the answer sharpens as a slow ramp rather than a travelling wave. The last row is the test of whether that diffuseness was the problem. Restricting each scratch token to attend within four places of itself left the wall exactly where it was — and the attention, now confined to a smaller box, was just as unfocused. Constraining where the model can look did not make it learn a sharper algorithm.</p>
+
+  <div class="note">
+    <div class="note-label">A note on how far &ldquo;extrapolation&rdquo; really goes</div>
+    <p>A later per-place variant, trained out to 64 digits with a variable number of combiner rounds, is exact on every length through 26. That figure is not extrapolation — 26 digits sits well inside what that model was trained on. Raising the training range moves the wall; it does not remove it, so a length is only evidence of generalization when it lies past the edge of training.</p>
+  </div>
+
+  <div class="ledger"></div>
+
   <h2>What this doesn't show</h2>
   <div class="note">
     <div class="note-label">Scope, stated plainly</div>
@@ -490,7 +519,7 @@
   </div>
 
   <footer>
-    stage 1 baseline reproduced and re-verified against current test data before publication · full ablation log available on request
+    stage 1 baseline reproduced and re-verified against current test data before publication · code and configs for every run in <a href="code/nanoGPT/">code/</a>
   </footer>
 
 </div>
